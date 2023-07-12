@@ -2,8 +2,9 @@ const { EmbedBuilder } = require("discord.js");
 
 module.exports = {
     name: "join",
-    description: "Invite bot to your voice channel.",
+    description: "Let me join your voice channel.",
     category: "Music",
+    options: [],
     permissions: {
         bot: ["Speak", "Connect"],
         channel: ["Speak", "Connect"],
@@ -17,7 +18,7 @@ module.exports = {
         owner: false,
     },
     run: async (client, interaction, player) => {
-        await interaction.deferReply({ ephemeral: false });
+        await interaction.deferReply();
 
         if (player) {
             const embed = new EmbedBuilder().setColor(client.color).setDescription(`\`❌\` | I already joined a voice channel.`);
@@ -30,7 +31,7 @@ module.exports = {
                 guildId: interaction.guild.id,
                 voiceChannel: interaction.member.voice.channel.id,
                 textChannel: interaction.channel.id,
-                region: interaction.member.voice.channel.rtcRegion || undefined,
+                // region: interaction.member.voice.channel.rtcRegion || undefined,
                 deaf: true,
             });
 
@@ -38,7 +39,7 @@ module.exports = {
 
             const embed = new EmbedBuilder()
                 .setColor(client.color)
-                .setDescription(`\`☑️\` | Joined to ${interaction.member.voice.channel.toString()}`);
+                .setDescription(`\`☑️\` | Joined ${interaction.member.voice.channel.toString()}`);
 
             return interaction.editReply({ embeds: [embed] });
         }

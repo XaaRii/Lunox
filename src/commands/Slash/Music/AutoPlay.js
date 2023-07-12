@@ -3,11 +3,12 @@ const { EmbedBuilder } = require("discord.js");
 module.exports = {
     name: "autoplay",
     description: "Autoplay random related song/s.",
-    category: "Utility",
+    category: "Music",
+    options: [],
     permissions: {
         bot: [],
         channel: [],
-        user: ["ManageGuild"],
+        user: [],
     },
     settings: {
         inVc: true,
@@ -17,7 +18,7 @@ module.exports = {
         owner: false,
     },
     run: async (client, interaction, player) => {
-        await interaction.deferReply({ ephemeral: true });
+        await interaction.deferReply();
 
         const currentsong = player.currentTrack.info;
 

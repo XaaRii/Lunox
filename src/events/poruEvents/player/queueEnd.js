@@ -11,14 +11,11 @@ module.exports.run = async (client, player) => {
 
     // this will make the bot will not be disconneted/destroyed when queue end if 247 activated
     const data = await Reconnect.findOne({ guild: player.guildId });
-
     if (data) return;
-    //
-
     await player.destroy();
 
     const embed = new EmbedBuilder()
-        .setDescription(`\`👋\` | Disconnected...!!! Due to queue was empty. This can be disable by using \`247\` command.`)
+        .setDescription(`\`👋\` | Queue finished! I'll be going now, cya!`)
         .setColor(client.color);
 
     return channel.send({ embeds: [embed] });

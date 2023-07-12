@@ -1,10 +1,10 @@
 const { EmbedBuilder } = require("discord.js");
-const GControl = require("../../../settings/models/Control.js");
 
 module.exports = {
     name: "replay",
     description: "Replay the current song.",
     category: "Music",
+    options: [],
     permissions: {
         bot: [],
         channel: [],
@@ -18,27 +18,15 @@ module.exports = {
         owner: false,
     },
     run: async (client, interaction, player) => {
-        await interaction.deferReply({ ephemeral: true });
-
-        const Control = await GControl.findOne({ guild: interaction.guild.id });
-
-        // When button control "enable", this will make command unable to use. You can delete this
-        if (Control.playerControl === "enable") {
-            const ctrl = new EmbedBuilder()
-                .setColor(client.color)
-                .setDescription(`\`❌\` | You can't use this command as the player control was enable!`);
-            return interaction.editReply({ embeds: [ctrl] });
-        }
+        await interaction.deferReply();
 
         if (!player.currentTrack.info.isSeekable) {
-            const embed = new EmbedBuilder().setColor(client.color).setDescription(`\`❌\` | Song can't be replay`);
-
+            const embed = new EmbedBuilder().setColor(client.color).setDescription(`\`❌\` | Song can't be replayed.`);
             return interaction.editReply({ embeds: [embed] });
         } else {
             await player.seekTo(0);
 
-            const embed = new EmbedBuilder().setColor(client.color).setDescription(`\`⏪\` | Song has been: \`Replayed\``);
-
+            const embed = new EmbedBuilder().setColor(client.color).setDescription(`\`⏪\` | Song has been \`replayed\`.`);
             return interaction.editReply({ embeds: [embed] });
         }
     },

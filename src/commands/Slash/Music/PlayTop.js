@@ -2,8 +2,8 @@ const { ApplicationCommandOptionType, EmbedBuilder } = require("discord.js");
 const formatDuration = require("../../../structures/FormatDuration.js");
 
 module.exports = {
-    name: "play",
-    description: "Play your favorite song/s.",
+    name: "playtop",
+    description: "Play your favorite song/s right after the current one.",
     category: "Music",
     options: [
         {
@@ -62,7 +62,7 @@ module.exports = {
 
             return interaction.editReply({ embeds: [embed] });
         }
-        
+
         let playSource = search ?? client.config.playSource;
 
         const res = await client.poru.resolve({ query: song, source: playSource, requester: interaction.user });
@@ -87,8 +87,8 @@ module.exports = {
         if (player.state !== "CONNECTED") player.connect();
 
         if (loadType === "PLAYLIST_LOADED") {
-            for (const track of tracks) {
-                player.queue.add(track);
+            for (let i = tracks.length - 1; i >= 0; i--) {
+                player.queue.unshift(tracks[i]);
             }
 
             const embed = new EmbedBuilder()
@@ -100,7 +100,7 @@ module.exports = {
         } else if (loadType === "SEARCH_RESULT" || loadType === "TRACK_LOADED") {
             const track = tracks[0];
 
-            player.queue.add(track);
+            player.queue.unshift(track);
 
             const embed = new EmbedBuilder()
                 .setColor(client.color)

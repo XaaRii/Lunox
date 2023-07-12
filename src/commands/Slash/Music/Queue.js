@@ -4,8 +4,9 @@ const formatDuration = require("../../../structures/FormatDuration.js");
 
 module.exports = {
     name: "queue",
-    description: "Show current player queue.",
+    description: "Show current queue.",
     category: "Music",
+    options: [],
     permissions: {
         bot: [],
         channel: [],
@@ -19,12 +20,12 @@ module.exports = {
         owner: false,
     },
     run: async (client, interaction, player) => {
-        await interaction.deferReply({ ephemeral: false });
+        await interaction.deferReply();
 
         const emoji = client.emoji.queue;
         const npSong = player.currentTrack.info;
         const currentDuration = formatDuration(npSong.length);
-        const currentTitle = npSong.title.length > 20 ? npSong.title.substr(0, 20) + "..." : npSong.title;
+        const currentTitle = npSong.title.length > 60 ? npSong.title.substr(0, 60) + "..." : npSong.title;
         const npDuration = npSong.isStream ? "LIVE" : currentDuration;
         const npTitle = npSong.title ? currentTitle : "Unknown";
 
@@ -32,8 +33,8 @@ module.exports = {
             (track, index) =>
                 `**${index + 1}. [${
                     track.info.title
-                        ? track.info.title.length > 25
-                            ? track.info.title.substr(0, 22) + "..."
+                        ? track.info.title.length > 45
+                            ? track.info.title.substr(0, 42) + "..."
                             : track.info.title
                         : "Unknown"
                 }](${track.info.uri})** • \`${track.info.isStream ? "LIVE" : formatDuration(track.info.length)}\` • ${
@@ -41,7 +42,7 @@ module.exports = {
                 }`,
         );
 
-        const pages = lodash.chunk(queue, 10).map((x) => x.join("\n"));
+        const pages = lodash.chunk(queue, 20).map((x) => x.join("\n"));
 
         let page = 0;
 
@@ -70,7 +71,7 @@ module.exports = {
             return interaction.editReply({ embeds: [embed] });
         } else {
             await interaction.editReply({ embeds: [embed], components: [row] }).then((msg) => {
-                const collector = msg.createMessageComponentCollector({ time: 60000 });
+                const collector = msg.createMessageComponentCollector({ time: 120000 });
 
                 collector.on("collect", async (message) => {
                     if (message.customId === "back") {

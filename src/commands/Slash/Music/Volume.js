@@ -1,5 +1,4 @@
 const { ApplicationCommandOptionType, EmbedBuilder } = require("discord.js");
-const GControl = require("../../../settings/models/Control.js");
 
 module.exports = {
     name: "volume",
@@ -28,30 +27,17 @@ module.exports = {
         owner: false,
     },
     run: async (client, interaction, player) => {
-        await interaction.deferReply({ ephemeral: true });
-
-        const Control = await GControl.findOne({ guild: interaction.guild.id });
-
-        // When button control "enable", this will make command unable to use. You can delete this
-        if (Control.playerControl === "enable") {
-            const ctrl = new EmbedBuilder()
-                .setColor(client.color)
-                .setDescription(`\`❌\` | You can't use this command as the player control was enable!`);
-            return interaction.editReply({ embeds: [ctrl] });
-        }
+        await interaction.deferReply();
 
         const value = interaction.options.getNumber("amount");
 
         if (!value) {
             const embed = new EmbedBuilder().setColor(client.color).setDescription(`\`🔊\` | Current player volume: \`${player.volume}%\``);
-
-            return interaction.editReply({ embeds: [embed], ephemeral: true });
+            return interaction.editReply({ embeds: [embed] });
         } else {
             await player.setVolume(value);
-
             const embed = new EmbedBuilder().setColor(client.color).setDescription(`\`🔊\` | Volume has been set to: \`${value}%\``);
-
-            return interaction.editReply({ embeds: [embed], ephemeral: true });
+            return interaction.editReply({ embeds: [embed] });
         }
     },
 };

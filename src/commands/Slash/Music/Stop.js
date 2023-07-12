@@ -1,10 +1,11 @@
 const { EmbedBuilder } = require("discord.js");
-const GControl = require("../../../settings/models/Control.js");
+const Reconnect = require("../../../settings/models/247.js");
 
 module.exports = {
     name: "stop",
-    description: "Stop or disconnect the player.",
+    description: "Stops or disconnects me.",
     category: "Music",
+    options: [],
     permissions: {
         bot: [],
         channel: [],
@@ -18,24 +19,17 @@ module.exports = {
         owner: false,
     },
     run: async (client, interaction, player) => {
-        await interaction.deferReply({ ephemeral: true });
+        await interaction.deferReply();
 
-        const Control = await GControl.findOne({ guild: interaction.guild.id });
+        // disable 24/7
+        let data = await Reconnect.findOne({ guild: interaction.guild.id });
+        await data?.delete();
 
-        // When button control "enable", this will make command unable to use. You can delete this
-        if (Control.playerControl === "enable") {
-            const ctrl = new EmbedBuilder()
-                .setColor(client.color)
-                .setDescription(`\`❌\` | You can't use this command as the player control was enable!`);
-            return interaction.editReply({ embeds: [ctrl] });
-        }
-
-        if (player.message) await player.message.delete();
+        await player.message?.delete().catch(e => null);
 
         await player.destroy();
 
-        const embed = new EmbedBuilder().setColor(client.color).setDescription(`\`👋\` | Player has been: \`Disconnected\``);
-
+        const embed = new EmbedBuilder().setColor(client.color).setDescription(`\`👋\` | Alright, cya!`);
         return interaction.editReply({ embeds: [embed] });
     },
 };

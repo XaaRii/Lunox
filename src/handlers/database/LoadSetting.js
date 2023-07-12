@@ -10,14 +10,4 @@ module.exports = async (client) => {
             await newBan.save();
         }
     };
-
-    client.createMessage = async function (message) {
-        const find_ban = await Ban.findOne({ userID: message.author.id });
-
-        if (!find_ban) {
-            const newBan = await Ban.create({ userID: message.author.id });
-
-            await newBan.save();
-        }
-    };
 };

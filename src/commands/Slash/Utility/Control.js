@@ -3,21 +3,21 @@ const GControl = require("../../../settings/models/Control.js");
 
 module.exports = {
     name: "control",
-    description: "Display or hide the player control button. [Premium]",
+    description: "Display or hide the player control buttons.",
     category: "Utility",
     options: [
         {
             name: "mode",
-            description: "Choose display or hide",
+            description: "Pick one.",
             type: ApplicationCommandOptionType.String,
             required: true,
             choices: [
                 {
-                    name: "Display",
+                    name: "Show buttons",
                     value: "display",
                 },
                 {
-                    name: "Hide",
+                    name: "Hide buttons",
                     value: "hide",
                 },
             ],

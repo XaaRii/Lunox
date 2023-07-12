@@ -1,0 +1,142 @@
+const { EmbedBuilder, ApplicationCommandOptionType } = require("discord.js");
+const delay = require("delay");
+
+module.exports = {
+    name: "effect",
+    description: "Enable/Disable music effects.",
+    category: "Music",
+    options: [
+        {
+            name: "mode",
+            description: "Choose the music effect.",
+            type: ApplicationCommandOptionType.String,
+            required: true,
+            choices: [
+                {
+                    name: "8D",
+                    value: "8d",
+                },
+                {
+                    name: "Earrape",
+                    value: "earrape",
+                },
+                {
+                    name: "Nightcore",
+                    value: "nightcore",
+                },
+                {
+                    name: "Slowmode",
+                    value: "slowmode",
+                },
+                {
+                    name: "Vaporwave",
+                    value: "vaporwave",
+                },
+                {
+                    name: "\"What's active?\"",
+                    value: "list",
+                },
+                {
+                    name: "Disable all",
+                    value: "disable",
+                },
+            ],
+        },
+    ],
+    permissions: {
+        bot: [],
+        channel: [],
+        user: [],
+    },
+    settings: {
+        inVc: false,
+        sameVc: true,
+        player: true,
+        current: true,
+        owner: false,
+    },
+    run: async (client, interaction, player) => {
+        await interaction.deferReply();
+        const choice = await interaction.options.getString("mode");
+        const embed = new EmbedBuilder().setColor(client.color);
+        console.log(player.filters.player)
+        switch (choice) {
+            case "8d":
+                if (!player.filters.player._8d) {
+                    await player.filters.set8D(true);
+                    embed.setDescription(`\`🔩\` | \`8D\` effect applied.`);
+                } else {
+                    await player.filters.set8D(false);
+                    embed.setDescription(`\`🔩\` | \`8D\` effect removed.`);
+                }
+                break;
+            case "earrape":
+                if (player.volume <= 111) {
+                    await player.setVolume(500);
+                    embed.setDescription(`\`🔩\` | \`Earrape\` effect applied.`);
+                } else {
+                    await player.setVolume(100);
+                    embed.setDescription(`\`🔩\` | Volume restored to 100%.`);
+                }
+                break;
+            case "nightcore":
+                if (player.filters.player.slowmode) {
+                    embed.setDescription(`\`❌\` | Sorry, but you cannot combine \`Slowmode\` and \`Nightcore\``)
+                    break;
+                }
+                if (!player.filters.player.nightcore) {
+                    await player.filters.setNightcore(true);
+                    embed.setDescription(`\`🔩\` | \`Nightcore\` effect applied.`);
+                } else {
+                    await player.filters.setNightcore(false);
+                    embed.setDescription(`\`🔩\` | \`Nightcore\` effect removed.`);
+                }
+                break;
+            case "slowmode":
+                if (!player.filters.player.slowmode) {
+                    await player.filters.setSlowmode(true);
+                    embed.setDescription(`\`🔩\` | \`Slowmode\` effect applied.`);
+                } else {
+                    await player.filters.setSlowmode(false);
+                    embed.setDescription(`\`🔩\` | \`Slowmode\` effect removed.`);
+                }
+                break;
+            case "vaporwave":
+                if (!player.filters.player.vaporwave) {
+                    await player.filters.setVaporwave(true);
+                    embed.setDescription(`\`🔩\` | \`Vaporwave\` effect applied.`);
+                } else {
+                    await player.filters.setVaporwave(false);
+                    embed.setDescription(`\`🔩\` | \`Vaporwave\` effect removed.`);
+                }
+                break;
+            case "list":
+                const res = ["```"];
+                embed.setTitle("Effects:")
+                res.push(`8D: ${await player.filters.player._8d ? "active" : "inactive"}`);
+                res.push(`Earrape: ${await player.filters.player.earrape ? "active" : "inactive"}`);
+                res.push(`Nightcore: ${await player.filters.player.nightcore ? "active" : "inactive"}`);
+                res.push(`Slowmode: ${await player.filters.player.slowmode ? "active" : "inactive"}`);
+                res.push(`Vaporwave: ${await player.filters.player.vaporwave ? "active" : "inactive"}`, "```");
+                embed.setDescription(res.join("\n"));
+                break;
+            case "disable":
+                await player.node.rest.updatePlayer({
+                    guildId: player.guildId,
+                    data: { filters: {} },
+                });
+                await player.setVolume(100);
+                embed.setDescription(`\`☑️\` | All effects were removed.`);
+                break;
+            default:
+                embed.setDescription(`\`❌\` | I don't know such effect! If you think i should, ask my owner.`);
+                break;
+        }
+        await delay(3000);
+        return interaction.editReply({ embeds: [embed] });
+
+
+
+
+    },
+};

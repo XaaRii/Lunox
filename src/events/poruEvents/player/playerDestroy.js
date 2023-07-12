@@ -4,7 +4,7 @@ module.exports.run = async (client, player) => {
     const channel = client.channels.cache.get(player.textChannel);
     if (!channel) return;
 
-    // If 247 activated, this will auto connect voice when bot disconnected/destoryed
+    // If 247 activated, this will auto connect voice when bot disconnected/destroyed
     const data = await Reconnect.findOne({ guild: player.guildId });
 
     if (data) {
@@ -17,7 +17,6 @@ module.exports.run = async (client, player) => {
             });
         }
     }
-    //
 
-    console.log(`[DEBUG] Player Destroyed from (${player.guildId})`);
+    console.log(`[DEBUG] Player Destroyed at (${player.guildId})`);
 };

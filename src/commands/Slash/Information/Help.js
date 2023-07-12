@@ -3,11 +3,9 @@ const {
     ActionRowBuilder,
     StringSelectMenuBuilder,
     StringSelectMenuOptionBuilder,
-    ButtonBuilder,
-    ButtonStyle,
 } = require("discord.js");
 const { readdirSync } = require("fs");
-const { supportUrl, inviteUrl, voteUrl, imageUrl } = require("../../../settings/config.js");
+const { imageUrl } = require("../../../settings/config.js");
 
 module.exports = {
     name: "help",
@@ -27,11 +25,6 @@ module.exports = {
     },
     run: async (client, interaction) => {
         await interaction.deferReply({ ephemeral: false });
-
-        const row2 = new ActionRowBuilder()
-            .addComponents(new ButtonBuilder().setLabel("Support").setURL(supportUrl).setStyle(ButtonStyle.Link))
-            .addComponents(new ButtonBuilder().setLabel("Vote").setURL(voteUrl).setStyle(ButtonStyle.Link))
-            .addComponents(new ButtonBuilder().setLabel("Invite").setURL(inviteUrl).setStyle(ButtonStyle.Link));
 
         const categories = readdirSync("./src/commands/Slash/");
 
@@ -64,7 +57,7 @@ module.exports = {
                 ),
         ]);
 
-        interaction.editReply({ embeds: [embed], components: [row, row2] }).then(async (msg) => {
+        interaction.editReply({ embeds: [embed], components: [row] }).then(async (msg) => {
             let filter = (i) => i.isStringSelectMenu() && i.user && i.message.author.id == client.user.id;
 
             let collector = await msg.createMessageComponentCollector({
@@ -114,9 +107,7 @@ module.exports = {
                             name: `${interaction.guild.members.me.displayName} Help Command!`,
                             iconURL: interaction.guild.iconURL({ dynamic: true }),
                         })
-                        .setDescription(
-                            `Help Command Menu was timed out, try using \`/help\` to show the help command menu again. Enjoying using **${client.user}**? Feel free to vote using Vote button below, it means a lot.\n\nThank You.`,
-                        )
+                        .setDescription(`Help Command Menu was timed out, try using \`/help\` to show the help command menu again.`)
                         .setImage(imageUrl)
                         .setColor(client.color)
                         .setFooter({
@@ -125,7 +116,7 @@ module.exports = {
                         })
                         .setTimestamp();
 
-                    msg.edit({ embeds: [timed], components: [row2] });
+                    msg.edit({ embeds: [timed] });
                 }
             });
         });

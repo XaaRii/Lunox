@@ -23,10 +23,7 @@ module.exports.run = async (client, node) => {
                 textChannel: data.text,
                 deaf: true,
             });
-
             console.log(`[INFO] Auto ReConnect found in ${maindata.length} servers!`);
-        }),
-            index * 5000;
+        }, index * 5000);
     }
-    //
 };

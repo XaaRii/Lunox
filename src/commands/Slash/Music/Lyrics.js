@@ -3,7 +3,7 @@ const fetch = require("node-fetch");
 
 module.exports = {
     name: "lyrics",
-    description: "Display lyrics for current played song.",
+    description: "Display lyrics for current song.",
     category: "Music",
     options: [
         {
@@ -26,7 +26,7 @@ module.exports = {
         owner: false,
     },
     run: async (client, interaction, player) => {
-        await interaction.deferReply({ ephemeral: false });
+        await interaction.deferReply();
 
         const value = interaction.options.getString("search");
 
@@ -43,14 +43,6 @@ module.exports = {
                 .then((res) => res.json())
                 .then((data) => {
                     const lyricSong = data.lyrics;
-
-                    if (!lyricSong) {
-                        const lyricError = new EmbedBuilder().setColor(client.color).setDescription(`\`❌\` | Lyrics was not found.`);
-
-                        return interaction.editReply({ embeds: [lyricError] });
-                    }
-
-                    const lyrics = lyricSong.length > 3905 ? lyricSong.substr(0, 3900) + "....." : lyricSong;
                     const titleSong = data.title;
                     const authorSong = data.author;
 
@@ -58,14 +50,21 @@ module.exports = {
                     const gLink = client.gsearch.craft(gSearch).url;
                     const urlSong = gLink.replace("http", "https");
 
+                    if (!lyricSong) {
+                        const lyricError = new EmbedBuilder().setColor(client.color).setDescription(`\`❌\` | Lyrics was not found.\n[Try searching for it yourself](${urlSong})`);
+                        return interaction.editReply({ embeds: [lyricError] });
+                    }
+
+                    const lyrics = lyricSong.length > 3905 ? lyricSong.substr(0, 3900) + "....." : lyricSong;
+
                     const lyricEmbed = new EmbedBuilder()
                         .setAuthor({
                             name: `${titleSong} by ${authorSong} lyrics`,
                             iconURL: client.user.displayAvatarURL({ dynamic: true }),
                         })
                         .setColor(client.color)
-                        .setDescription(`${lyrics}\n**[Click Here For More](${urlSong})**`)
-                        .setThumbnail(CurrentSong.image)
+                        .setDescription(`${lyrics}\n**[Check it on google](${urlSong})**`)
+                        .setThumbnail(data.thumbnail.genius)
                         .setFooter({
                             text: `Requested by ${interaction.user.username}`,
                             iconURL: interaction.user.displayAvatarURL({ dynamic: true }),

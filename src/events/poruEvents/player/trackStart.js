@@ -13,7 +13,7 @@ module.exports.run = async (client, player, track) => {
 
     if (!player) return;
 
-    const titles = track.info.title.length > 20 ? track.info.title.substr(0, 20) + "..." : track.info.title;
+    const titles = track.info.title.length > 45 ? track.info.title.substr(0, 45) + "..." : track.info.title;
     const authors = track.info.author.length > 20 ? track.info.author.substr(0, 20) + "..." : track.info.author;
     const trackDuration = track.info.isStream ? "LIVE" : formatDuration(track.info.length);
     const trackAuthor = track.info.author ? authors : "Unknown";
@@ -68,213 +68,167 @@ module.exports.run = async (client, player, track) => {
             return true;
         else {
             message.reply({
-                content: `\`❌\` | You must be on the same voice channel as mine to use this button.`,
+                content: `\`❌\` | You must be in the same voice channel as me to use this button.`,
                 ephemeral: true,
             });
             return false;
         }
     };
 
-    const collector = nplaying.createMessageComponentCollector({ filter, time: track.info.lenght });
+    const collector = nplaying.createMessageComponentCollector({ filter, time: track.info.length });
 
     collector.on("collect", async (message) => {
-        if (message.customId === "loop") {
-            if (!player) {
-                collector.stop();
-            } else if (player.loop === "NONE") {
+        if (!player) return collector.stop();
+        switch (message.customId) {
+            case "loop":
                 message.deferUpdate();
-
-                player.setLoop("TRACK");
-
+                switch (player.loop) {
+                    case "NONE":
+                        player.setLoop("TRACK");
+                        bLoop.setEmoji(emoji.loop.track).setStyle(ButtonStyle.Primary);
+                        break;
+                    case "TRACK":
+                        player.setLoop("QUEUE");
+                        bLoop.setEmoji(emoji.loop.queue).setStyle(ButtonStyle.Success);
+                        break;
+                    case "QUEUE":
+                        player.setLoop("NONE");
+                        bLoop.setEmoji(emoji.loop.none).setStyle(ButtonStyle.Secondary);
+                        break;
+                }
                 Started.setFooter({
                     text: `Loop Mode: ${capital(player.loop)} • Queue Left: ${player.queue.length} • Volume: ${player.volume}%`,
                 });
-
-                bLoop.setEmoji(emoji.loop.track).setStyle(ButtonStyle.Primary);
-
                 await nplaying.edit({ embeds: [Started], components: [button, button2] });
-            } else if (player.loop === "TRACK") {
+                break;
+
+            case "replay":
+                if (!player.currentTrack.info.isSeekable) {
+                    const embed = new EmbedBuilder().setColor(client.color).setDescription(`\`❌\` | Song can't be replayed`);
+                    return message.reply({ embeds: [embed], ephemeral: true });
+                } else {
+                    message.deferUpdate();
+                    await player.seekTo(0);
+                }
+                break;
+            case "stop":
                 message.deferUpdate();
-
-                player.setLoop("QUEUE");
-
-                Started.setFooter({
-                    text: `Loop Mode: ${capital(player.loop)} • Queue Left: ${player.queue.length} • Volume: ${player.volume}%`,
-                });
-
-                bLoop.setEmoji(emoji.loop.queue).setStyle(ButtonStyle.Success);
-
-                await nplaying.edit({ embeds: [Started], components: [button, button2] });
-            } else if (player.loop === "QUEUE") {
-                message.deferUpdate();
-
-                player.setLoop("NONE");
-
-                Started.setFooter({
-                    text: `Loop Mode: ${capital(player.loop)} • Queue Left: ${player.queue.length} • Volume: ${player.volume}%`,
-                });
-
-                bLoop.setEmoji(emoji.loop.none).setStyle(ButtonStyle.Secondary);
-
-                await nplaying.edit({ embeds: [Started], components: [button, button2] });
-            }
-        } else if (message.customId === "replay") {
-            if (!player) {
-                collector.stop();
-            } else if (!player.currentTrack.info.isSeekable) {
-                const embed = new EmbedBuilder().setColor(client.color).setDescription(`\`❌\` | Song can't be replay`);
-
-                return message.reply({ embeds: [embed], ephemeral: true });
-            } else {
-                message.deferUpdate();
-
-                await player.seekTo(0);
-            }
-        } else if (message.customId === "stop") {
-            if (!player) {
-                collector.stop();
-            } else {
-                message.deferUpdate();
-
                 if (player.message) await player.message.delete();
-
                 await player.destroy();
-            }
-        } else if (message.customId === "pause") {
-            if (!player) {
-                collector.stop();
-            } else if (player.isPaused) {
+                break;
+            case "pause":
                 message.deferUpdate();
-
-                player.pause(false);
-
-                Started.setAuthor({
-                    name: `Now Playing`,
-                    iconURL: "https://cdn.discordapp.com/attachments/1014342568554811443/1025740239236517908/music-disc.gif",
-                });
-
-                bPause.setEmoji(emoji.pause).setStyle(ButtonStyle.Secondary);
-
+                if (player.isPaused) {
+                    player.pause(false);
+                    Started.setAuthor({
+                        name: `Now Playing`,
+                        iconURL: "https://cdn.discordapp.com/attachments/1014342568554811443/1025740239236517908/music-disc.gif",
+                    });
+                    bPause.setEmoji(emoji.pause).setStyle(ButtonStyle.Secondary);
+                } else {
+                    player.pause(true);
+                    Started.setAuthor({
+                        name: `Song Paused`,
+                        iconURL: "https://cdn.discordapp.com/attachments/1014342568554811443/1025740239236517908/music-disc.gif",
+                    });
+                    bPause.setEmoji(emoji.resume).setStyle(ButtonStyle.Primary);
+                }
                 await nplaying.edit({ embeds: [Started], components: [button, button2] });
-            } else {
-                message.deferUpdate();
-
-                player.pause(true);
-
-                Started.setAuthor({
-                    name: `Song Paused`,
-                    iconURL: "https://cdn.discordapp.com/attachments/1014342568554811443/1025740239236517908/music-disc.gif",
-                });
-
-                bPause.setEmoji(emoji.resume).setStyle(ButtonStyle.Primary);
-
-                await nplaying.edit({ embeds: [Started], components: [button, button2] });
-            }
-        } else if (message.customId === "skip") {
-            if (!player) {
-                collector.stop();
-            } else if (!player || player.queue.size == 0) {
-                const embed = new EmbedBuilder().setDescription(`\`❌\` | Queue is: \`Empty\``).setColor(client.color);
-
-                return message.reply({ embeds: [embed], ephemeral: true });
-            } else {
-                message.deferUpdate();
-
-                await player.stop();
-            }
-        } else if (message.customId === "prev") {
-            if (!player) {
-                collector.stop();
-            } else if (!player.previousTrack) {
-                const embed = new EmbedBuilder().setDescription(`\`❌\` | Previous song was: \`Not found\``).setColor(client.color);
-
-                return message.reply({ embeds: [embed], ephemeral: true });
-            } else {
-                message.deferUpdate();
-
-                await player.queue.unshift(player.previousTrack);
-                await player.stop();
-            }
-        } else if (message.customId === "shuffle") {
-            if (!player) {
-                collector.stop();
-            } else if (!player.queue.length) {
-                const embed = new EmbedBuilder().setDescription(`\`❌\` | Queue is: \`Empty\``).setColor(client.color);
-
-                return message.reply({ embeds: [embed], ephemeral: true });
-            } else {
-                message.deferUpdate();
-
-                await player.queue.shuffle();
-            }
-        } else if (message.customId === "voldown") {
-            if (!player) {
-                collector.stop();
-            } else if (player.volume < 20) {
-                await player.setVolume(10);
-
-                const embed = new EmbedBuilder().setDescription(`\`❌\` | Volume can't be lower than: \`10%\``).setColor(client.color);
-
-                return message.reply({ embeds: [embed], ephemeral: true });
-            } else {
-                message.deferUpdate();
-
-                await player.setVolume(player.volume - 10);
-
-                Started.setFooter({
-                    text: `Queue Left: ${player.queue.length} • Loop Mode: ${capital(player.loop)} • Volume: ${player.volume}%`,
-                });
-
-                await nplaying.edit({ embeds: [Started], components: [button, button2] });
-            }
-        } else if (message.customId === "volup") {
-            if (!player) {
-                collector.stop();
-            } else if (player.volume > 90) {
-                await player.setVolume(100);
-
-                const embed = new EmbedBuilder().setDescription(`\`❌\` | Volume can't be higher than: \`100%\``).setColor(client.color);
-
-                return message.reply({ embeds: [embed], ephemeral: true });
-            } else {
-                message.deferUpdate();
-
-                await player.setVolume(player.volume + 10);
-
-                Started.setFooter({
-                    text: `Queue Left: ${player.queue.length} • Loop Mode: ${capital(player.loop)} • Volume: ${player.volume}%`,
-                });
-
-                await nplaying.edit({ embeds: [Started], components: [button, button2] });
-            }
-        } else if (message.customId === "info") {
-            if (!player) {
-                collector.stop();
-            } else {
+                break;
+            case "skip":
+                if (!player || player.queue.size == 0) {
+                    const embed = new EmbedBuilder().setDescription(`\`❌\` | No more songs in queue to skip to.`).setColor(client.color);
+                    return message.reply({ embeds: [embed], ephemeral: true });
+                } else {
+                    message.deferUpdate();
+                    await player.stop();
+                }
+                break;
+            case "prev":
+                if (!player.previousTrack) {
+                    const embed = new EmbedBuilder().setDescription(`\`❌\` | Couldn't find any previous songs in this queue.`).setColor(client.color);
+                    return message.reply({ embeds: [embed], ephemeral: true });
+                } else {
+                    message.deferUpdate();
+                    await player.queue.unshift(player.previousTrack);
+                    await player.stop();
+                }
+                break;
+            case "shuffle":
+                if (!player.queue.length) {
+                    const embed = new EmbedBuilder().setDescription(`\`❌\` | Queue is empty, nothing to shuffle.`).setColor(client.color);
+                    return message.reply({ embeds: [embed], ephemeral: true });
+                } else {
+                    message.deferUpdate();
+                    await player.queue.shuffle();
+                }
+                break;
+            case "voldown":
+                if (player.volume < 20) {
+                    await player.setVolume(10);
+                    const embed = new EmbedBuilder().setDescription(`\`❌\` | Volume can't be lower than \`10%\``).setColor(client.color);
+                    return message.reply({ embeds: [embed], ephemeral: true });
+                } else {
+                    message.deferUpdate();
+                    await player.setVolume(player.volume - 10);
+                    Started.setFooter({
+                        text: `Queue Left: ${player.queue.length} • Loop Mode: ${capital(player.loop)} • Volume: ${player.volume}%`,
+                    });
+                    await nplaying.edit({ embeds: [Started], components: [button, button2] });
+                }
+                break;
+            case "volup":
+                if (player.volume > 90) {
+                    await player.setVolume(100);
+                    const embed = new EmbedBuilder().setDescription(`\`❌\` | Volume can't be higher than \`100%\``).setColor(client.color);
+                    return message.reply({ embeds: [embed], ephemeral: true });
+                } else {
+                    message.deferUpdate();
+                    await player.setVolume(player.volume + 10);
+                    Started.setFooter({
+                        text: `Queue Left: ${player.queue.length} • Loop Mode: ${capital(player.loop)} • Volume: ${player.volume}%`,
+                    });
+                    await nplaying.edit({ embeds: [Started], components: [button, button2] });
+                }
+                break;
+            case "info":
                 const Titles =
-                    player.currentTrack.info.title.length > 20
-                        ? player.currentTrack.info.title.substr(0, 20) + "..."
+                    player.currentTrack.info.title.length > 200
+                        ? player.currentTrack.info.title.substr(0, 200) + "..."
                         : player.currentTrack.info.title;
                 const Author =
-                    player.currentTrack.info.author.length > 20
-                        ? player.currentTrack.info.author.substr(0, 20) + "..."
+                    player.currentTrack.info.author.length > 60
+                        ? player.currentTrack.info.author.substr(0, 60) + "..."
                         : player.currentTrack.info.author;
                 const currentPosition = formatDuration(player.position);
                 const trackDuration = formatDuration(player.currentTrack.info.length);
                 const playerDuration = player.currentTrack.info.isStream ? "LIVE" : trackDuration;
                 const currentAuthor = player.currentTrack.info.author ? Author : "Unknown";
                 const currentTitle = player.currentTrack.info.title ? Titles : "Unknown";
-                const Part = Math.floor((player.position / trackDuration) * 30);
+                const Part = Math.floor((player.position / player.currentTrack.info.length) * 30);
                 const Emoji = player.isPlaying ? "🕒 |" : "⏸ |";
 
                 let sources = "Unknown";
-
-                if (player.currentTrack.info.sourceName === "youtube") sources = "YouTube";
-                else if (player.currentTrack.info.sourceName === "soundcloud") sources = "SoundCloud";
-                else if (player.currentTrack.info.sourceName === "spotify") sources = "Spotify";
-                else if (player.currentTrack.info.sourceName === "applemusic") sources = "Apple Music";
-                else if (player.currentTrack.info.sourceName === "bandcamp") sources = "Bandcamp";
-                else if (player.currentTrack.info.sourceName === "http") sources = "HTTP";
+                switch (player.currentTrack.info.sourceName) {
+                    case "youtube":
+                        sources = "YouTube";
+                        break;
+                    case "soundcloud":
+                        sources = "SoundCloud";
+                        break;
+                    case "spotify":
+                        sources = "Spotify";
+                        break;
+                    case "applemusic":
+                        sources = "Apple Music";
+                        break;
+                    case "bandcamp":
+                        sources = "Bandcamp";
+                        break;
+                    case "http":
+                        sources = "HTTP";
+                        break;
+                }
 
                 const embed = new EmbedBuilder()
                     .setAuthor({
@@ -299,9 +253,8 @@ module.exports.run = async (client, player, track) => {
                     .setColor(client.color)
                     .setFooter({ text: `© ${client.user.username}` })
                     .setTimestamp();
-
-                return message.reply({ embeds: [embed], ephemeral: true });
-            }
+                message.reply({ embeds: [embed], ephemeral: true });
+                break;
         }
     });
 };

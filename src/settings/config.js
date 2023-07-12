@@ -3,6 +3,7 @@ const { customFilter } = require("poru");
 
 module.exports = {
     // BOT DETAILS
+    module: process.env.MODULE || "standalone", // "standalone" (grabs bot's name instead) / "ishina-music#Ishina's music module"
     token: process.env.TOKEN || " ", // your bot token
     prefix: process.env.PREFIX || "!", // your bot prefix "for owner message command"
     color: process.env.EMBED_COLOR || " ", // your embeded hex color
@@ -10,6 +11,7 @@ module.exports = {
     guildLogs: process.env.GUILD_LOGS || " ", // your server join left logs Channel ID
     leaveTimeout: process.env.LEAVE_TIMEOUT || "60000", // set leave TimeOut when bot was alone 1000 = 1sec
     disableYouTube: parseBoolean(process.env.DISABLE_YOUTUBE || "false"), // ""true/false" | Enable/disable YouTube feature. Disabling this will make "autoplay" command useless!!!
+
 
     // PORU DETAILS
     playSource: process.env.PLAY_SOURCE || "ytmsearch", // recomended using "ytmsearch". You can change this to: "ytsearch" / "ytmsearch" / "scsearch". More? Use Lavasrc plugin.

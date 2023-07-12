@@ -1,10 +1,10 @@
 const { EmbedBuilder } = require("discord.js");
-const GControl = require("../../../settings/models/Control.js");
 
 module.exports = {
     name: "shuffle",
-    description: "Shuffle the current player queue.",
+    description: "Shuffle current queue.",
     category: "Music",
+    options: [],
     permissions: {
         bot: [],
         channel: [],
@@ -18,27 +18,14 @@ module.exports = {
         owner: false,
     },
     run: async (client, interaction, player) => {
-        await interaction.deferReply({ ephemeral: true });
-
-        const Control = await GControl.findOne({ guild: interaction.guild.id });
-
-        // When button control "enable", this will make command unable to use. You can delete this
-        if (Control.playerControl === "enable") {
-            const ctrl = new EmbedBuilder()
-                .setColor(client.color)
-                .setDescription(`\`❌\` | You can't use this command as the player control was enable!`);
-            return interaction.editReply({ embeds: [ctrl] });
-        }
+        await interaction.deferReply();
 
         if (!player.queue.length) {
-            const embed = new EmbedBuilder().setColor(client.color).setDescription(`\`❌\` | Queue was: \`Empty\``);
-
+            const embed = new EmbedBuilder().setColor(client.color).setDescription(`\`❌\` | Queue is empty, nothing to shuffle.`);
             return interaction.editReply({ embeds: [embed] });
         } else {
             await player.queue.shuffle();
-
-            const embed = new EmbedBuilder().setColor(client.color).setDescription(`\`🔀\` | Queue has been: \`Shuffled\``);
-
+            const embed = new EmbedBuilder().setColor(client.color).setDescription(`\`🔀\` | Queue has been \`shuffled\`.`);
             return interaction.editReply({ embeds: [embed] });
         }
     },

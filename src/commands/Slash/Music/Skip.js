@@ -3,8 +3,9 @@ const GControl = require("../../../settings/models/Control.js");
 
 module.exports = {
     name: "skip",
-    description: "Skip the current played song.",
+    description: "Skip current song.",
     category: "Music",
+    options: [],
     permissions: {
         bot: [],
         channel: [],
@@ -18,26 +19,14 @@ module.exports = {
         owner: false,
     },
     run: async (client, interaction, player) => {
-        await interaction.deferReply({ ephemeral: true });
-
-        const Control = await GControl.findOne({ guild: interaction.guild.id });
-
-        // When button control "enable", this will make command unable to use. You can delete this
-        if (Control.playerControl === "enable") {
-            const ctrl = new EmbedBuilder()
-                .setColor(client.color)
-                .setDescription(`\`❌\` | You can't use this command as the player control was enable!`);
-            return interaction.editReply({ embeds: [ctrl] });
-        }
+        await interaction.deferReply();
+        await player.stop();
 
         if (!player || player.queue.size == 0) {
-            const embed = new EmbedBuilder().setDescription(`\`❌\` | Next song was: \`Not found\``).setColor(client.color);
-
+            const embed = new EmbedBuilder().setDescription(`\`⏭️\` | Song skipped, no more songs in queue.`).setColor(client.color);
             return interaction.editReply({ embeds: [embed] });
         } else {
-            await player.stop();
-
-            const embed = new EmbedBuilder().setColor(client.color).setDescription(`\`⏭️\` | Song has been: \`Skipped\``);
+            const embed = new EmbedBuilder().setColor(client.color).setDescription(`\`⏭️\` | Song skipped!`);
 
             return interaction.editReply({ embeds: [embed] });
         }

@@ -2,13 +2,13 @@ const { EmbedBuilder } = require("discord.js");
 const moment = require("moment");
 
 module.exports.run = async (client, guild) => {
-    const channel = client.channels.cache.get(client.config.guildLogs);
-
+    const channel = await client.channels.cache.get(client.config.guildLogs);
+    if (!channel) return;
     let own = await guild.fetchOwner();
 
     const embed = new EmbedBuilder()
         .setAuthor({
-            name: `Lefted a Server!`,
+            name: `Left a Server!`,
             iconURL: client.user.displayAvatarURL({ dynamic: true }),
         })
         .addFields([

@@ -16,11 +16,10 @@ module.exports.run = async (client, player) => {
                 const identifier = trackSearch.identifier;
                 const search = `https://music.youtube.com/watch?v=${identifier}&list=RD${identifier}`;
                 const res = await client.poru.resolve({ query: search, source: playSource, requester: trackSearch.requester });
-
                 await player.queue.add(res.tracks[Math.floor(Math.random() * res.tracks.length) ?? 2]);
             }
         } catch (error) {
-            ///
+            console.log("trackEnd error:", error)
         }
     }
 };

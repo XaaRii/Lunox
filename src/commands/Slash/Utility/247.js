@@ -18,15 +18,13 @@ module.exports = {
         owner: false,
     },
     run: async (client, interaction, player) => {
-        await interaction.deferReply({ ephemeral: true });
+        await interaction.deferReply();
 
         let data = await Reconnect.findOne({ guild: interaction.guild.id });
-
         if (data) {
             await data.delete();
 
-            const off = new EmbedBuilder().setDescription(`\`🔴\` | 247 Mode has been: \`Disabled\``).setColor(client.color);
-
+            const off = new EmbedBuilder().setDescription(`\`🔴\` | 24/7 Mode has been \`disabled\``).setColor(client.color);
             return interaction.editReply({ embeds: [off] });
         } else if (!data) {
             const newData = await Reconnect.create({
@@ -37,8 +35,7 @@ module.exports = {
 
             await newData.save();
 
-            const on = new EmbedBuilder().setDescription(`\`🔵\` | 247 Mode has been: \`Enabled\``).setColor(client.color);
-
+            const on = new EmbedBuilder().setDescription(`\`🔵\` | 24/7 Mode has been \`enabled\``).setColor(client.color);
             return interaction.editReply({ embeds: [on] });
         }
     },

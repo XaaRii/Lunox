@@ -26,19 +26,19 @@ module.exports = {
         owner: false,
     },
     run: async (client, interaction, player) => {
-        await interaction.deferReply({ ephemeral: true });
+        await interaction.deferReply();
 
         const track = interaction.options.getNumber("position");
 
         if (track > player.queue.length) {
-            const embed = new EmbedBuilder().setColor(client.color).setDescription(`\`❌\` | Song was not found`);
+            const embed = new EmbedBuilder().setColor(client.color).setDescription(`\`❌\` | Song was not found.`);
 
             return interaction.editReply({ embeds: [embed] });
         }
 
         await player.queue.remove(track - 1);
 
-        const embed = new EmbedBuilder().setColor(client.color).setDescription(`\`☑️\` | Song has been: \`Removed\``);
+        const embed = new EmbedBuilder().setColor(client.color).setDescription(`\`☑️\` | Song removed!`);
 
         return interaction.editReply({ embeds: [embed] });
     },

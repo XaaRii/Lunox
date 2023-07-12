@@ -1,5 +1,4 @@
 const { EmbedBuilder, ApplicationCommandOptionType } = require("discord.js");
-const GControl = require("../../../settings/models/Control.js");
 
 module.exports = {
     name: "loop",
@@ -20,6 +19,10 @@ module.exports = {
                     name: "queue",
                     value: "queue",
                 },
+                {
+                    name: "none",
+                    value: "none",
+                },
             ],
         },
     ],
@@ -36,48 +39,24 @@ module.exports = {
         owner: false,
     },
     run: async (client, interaction, player) => {
-        await interaction.deferReply({ ephemeral: true });
-
-        const Control = await GControl.findOne({ guild: interaction.guild.id });
-
-        // When button control "enable", this will make command unable to use. You can delete this
-        if (Control.playerControl === "enable") {
-            const ctrl = new EmbedBuilder()
-                .setColor(client.color)
-                .setDescription(`\`❌\` | You can't use this command as the player control was enable!`);
-            return interaction.editReply({ embeds: [ctrl] });
-        }
+        await interaction.deferReply();
         
         const input = interaction.options.getString("mode");
-
-        if (input === "current") {
-            if (player.loop === "TRACK") {
-                await player.setLoop("NONE");
-
-                const embed = new EmbedBuilder().setColor(client.color).setDescription(`\`🔂\` | Loop mode has been: \`Disabled\``);
-
-                return interaction.editReply({ embeds: [embed] });
-            } else {
+        const embed = new EmbedBuilder().setColor(client.color);
+        switch (input) {
+            case "current":
                 await player.setLoop("TRACK");
-
-                const embed = new EmbedBuilder().setColor(client.color).setDescription(`\`🔂\` | Loop mode has been set to: \`Current\``);
-
-                return interaction.editReply({ embeds: [embed] });
-            }
-        } else if (input === "queue") {
-            if (player.loop === "QUEUE") {
+                embed.setDescription(`\`🔂\` | Loop mode set to \`current\``);
+                break;
+            case "queue":
+                await player.setLoop("QUEUE");
+                embed.setDescription(`\`♾️\` | Loop mode set to \`queue\``);
+                break;
+            case "none":
                 await player.setLoop("NONE");
-
-                const embed = new EmbedBuilder().setColor(client.color).setDescription(`\`🔁\` | Loop mode has been: \`Disabled\``);
-
-                return interaction.editReply({ embeds: [embed] });
-            } else {
-                player.setLoop("QUEUE");
-
-                const embed = new EmbedBuilder().setColor(client.color).setDescription(`\`🔁\` | Loop mode has been set to: \`Queue\``);
-
-                return interaction.editReply({ embeds: [embed] });
-            }
+                embed.setDescription(`\`🔁\` | Loop mode set to \`none\``);
+                break;
         }
+        return interaction.editReply({ embeds: [embed] });
     },
 };

@@ -1,25 +1,8 @@
-const { EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle } = require("discord.js");
-const { supportUrl } = require("../../../settings/config.js");
-
 module.exports.run = async (client, message) => {
     //Ignoring bot, system, dm and webhook messages
     if (message.author.bot || !message.guild || message.system || message.webhookId) return;
 
-    await client.createMessage(message);
-
     let prefix = client.prefix;
-    const mention = new RegExp(`^<@!?${client.user.id}>( |)$`);
-
-    if (message.content.match(mention)) {
-        const embed = new EmbedBuilder().setColor(client.color).setDescription(`My prefix for this server is: \`/\``);
-
-        message.reply({ embeds: [embed] });
-    }
-
-    //remove prefix for owner
-    if (client.owner.includes(message.member.id) && !client.owner.includes(client.user.id) && !message.content.startsWith(prefix)) {
-        prefix = "";
-    }
 
     const escapeRegex = (str) => str.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
     const prefixRegex = new RegExp(`^(<@!?${client.user.id}>|${escapeRegex(prefix)})\\s*`);
@@ -29,19 +12,15 @@ module.exports.run = async (client, message) => {
 
     const cmd = args.shift().toLowerCase();
     if (cmd.length === 0) return;
+
+    //grab command or ignore
     let command = client.commands.get(cmd);
-
-    //Finding command from aliases
     if (!command) command = client.commands.get(client.aliases.get(cmd));
-
     if (!command) return;
-
-    const row = new ActionRowBuilder().addComponents(new ButtonBuilder().setLabel("Support").setURL(supportUrl).setStyle(ButtonStyle.Link));
 
     if (client.dev.has(true) && message.author.id !== client.owner) {
         return message.reply({
-            content: `\`❌\` | ${client.user} is under maintenance. Sorry for the inconvinience.\n\nThank You.`,
-            components: [row],
+            content: `\`❌\` | ${client.config.module === "standalone" ? client.user : client.config.module.split("#")[1]} is under maintenance. Sorry for the inconvenience.\n\nThank You.`,
         });
     }
 
@@ -59,13 +38,12 @@ module.exports.run = async (client, message) => {
 
     if (botMissingPermissions.length > 0)
         return message.reply({
-            content: `\`❌\` | I don't have one of these permissions \`ViewChannel\`, \`SendMessages\`, \`EmbedLinks\`.\nPlease double check them in your server role & channel settings.`,
-            components: [row],
+            content: `\`❌\` | I need at least these permissions: \`ViewChannel\`, \`SendMessages\`, \`EmbedLinks\`.\nIt seems I'm missing these: [\`${botMissingPermissions.join("\`, \`")}\`]\nPlease double check them in your server role & channel settings.`,
         });
 
     //Check Owner
     if (command.owner && message.author.id !== client.owner) {
-        return message.reply({ content: `\`❌\` | Only my owner can use this command!` });
+        return message.reply({ content: `\`❌\` | I ain't gonna listen to someone who can't even write a 'Hello world' program!` });
     }
 
     //Error handling
@@ -74,6 +52,6 @@ module.exports.run = async (client, message) => {
     } catch (error) {
         console.log(error);
 
-        return message.reply({ content: `\`❌\` | Something went wrong.`, components: [row] });
+        return message.reply({ content: `\`❌\` | Something went wrong.` });
     }
 };

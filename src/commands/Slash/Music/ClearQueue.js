@@ -2,8 +2,9 @@ const { EmbedBuilder } = require("discord.js");
 
 module.exports = {
     name: "clearqueue",
-    description: "Clear the current player queue.",
+    description: "Clear the current queue.",
     category: "Music",
+    options: [],
     permissions: {
         bot: [],
         channel: [],
@@ -17,10 +18,10 @@ module.exports = {
         owner: false,
     },
     run: async (client, interaction, player) => {
-        await interaction.deferReply({ ephemeral: true });
+        await interaction.deferReply();
 
         if (!player.queue.length) {
-            const embed = new EmbedBuilder().setColor(client.color).setDescription(`\`❌\` | Queue is: \`Empty\``);
+            const embed = new EmbedBuilder().setColor(client.color).setDescription(`\`❌\` | Queue was already empty.`);
 
             return interaction.editReply({ embeds: [embed] });
         } else {
@@ -28,7 +29,7 @@ module.exports = {
 
             await player.queue.clear();
 
-            const embed = new EmbedBuilder().setColor(client.color).setDescription(`\`☑️\` | \`${length}\` Queue has been: \`Cleared\``);
+            const embed = new EmbedBuilder().setColor(client.color).setDescription(`\`☑️\` | \`${length}\` songs were removed from queue.`);
 
             return interaction.editReply({ embeds: [embed] });
         }

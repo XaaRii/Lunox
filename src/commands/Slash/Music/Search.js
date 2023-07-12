@@ -3,7 +3,7 @@ const formatDuration = require("../../../structures/FormatDuration.js");
 
 module.exports = {
     name: "search",
-    id: "1055080810992111652",
+    // id: "1055080810992111652",
     description: "Search for your favorite song.",
     category: "Music",
     options: [
@@ -12,6 +12,30 @@ module.exports = {
             description: "Provide song name you want to search.",
             type: ApplicationCommandOptionType.String,
             required: true,
+        },
+        {
+            name: "search_type",
+            description: "optional, default: Youtube music",
+            type: ApplicationCommandOptionType.String,
+            required: false,
+            choices: [
+                {
+                    name: "Youtube Music",
+                    value: "ytmsearch",
+                },
+                {
+                    name: "Youtube",
+                    value: "ytsearch",
+                },
+                {
+                    name: "Spotify",
+                    value: "spsearch",
+                },
+                {
+                    name: "SoundCloud",
+                    value: "scsearch",
+                },
+            ],
         },
     ],
     permissions: {
@@ -34,30 +58,22 @@ module.exports = {
                 .setColor(client.color)
                 .setDescription(`\`❌\` | You must be on the same voice channel as mine to use this command.`)
                 .setTimestamp();
-
             return interaction.reply({ embeds: [warning], ephemeral: true });
         }
 
         if (/^https?:\/\/(?:www\.)?[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b(?:[-a-zA-Z0-9()@:%_\+.~#?&\/=]*)$/.test(query)) {
             const embed = new EmbedBuilder()
-                .setDescription(`\`❌\` | Please use \`/play\` command for url search query.`)
+                .setDescription(`\`❌\` | Please use \`/play\` command for links.`)
                 .setColor(client.color);
-
             return interaction.reply({ embeds: [embed], ephemeral: true });
         }
 
-        await interaction.deferReply({ ephemeral: false });
+        await interaction.deferReply();
 
-        // This will force the playSource config to be set as 'spotify' if the config.js or .env file has 'disableYouTube' set to 'true' and the playSource value you set in the config.js is one of the constants in the 'youtube' array below.
-        let playSource = client.config.playSource;
+        const search = interaction.options.getString("search_type");
+        let playSource = search ?? client.config.playSource;
 
-        const youtube = ["ytsearch", "ytmsearch"];
-
-        if (client.config.disableYouTube === true && youtube.includes(playSource)) playSource = "spsearch"; // You must have the Lavasrc plugin installed on your lavalink for this to work!!!
-        // This will not prevent the user to use a direct youtube url!!!
-        // if you want to pass a "return" response to the user when you disable youtube, do some searching on the internet for how to do that!!!
-
-        const res = await client.poru.resolve({ query: query, source: playSource });
+        const res = await client.poru.resolve({ query: query, source: playSource, requester: interaction.user });
         const { tracks } = res;
 
         const results = tracks.slice(0, 10);
@@ -68,9 +84,7 @@ module.exports = {
             .slice(0, 10)
             .map(
                 (r) =>
-                    `\`${++n}.\` **[${r.info.title.length > 20 ? r.info.title.substr(0, 25) + "..." : r.info.title}](${r.info.uri})** • ${
-                        r.info.author
-                    }`,
+                    `\`${++n}.\` **[${r.info.title.length > 45 ? r.info.title.substr(0, 42) + "..." : r.info.title}](${r.info.uri})** • ${r.info.author}`,
             )
             .join("\n");
 
@@ -103,7 +117,7 @@ module.exports = {
             .setAuthor({ name: "Seach Selection Menu", iconURL: interaction.member.displayAvatarURL({}) })
             .setDescription(str)
             .setColor(client.color)
-            .setFooter({ text: `You have 30 seconds to make your selection through the dropdown menu.` });
+            .setFooter({ text: `You have 30 seconds to make your decision through the dropdown menu.` });
 
         await interaction.editReply({ embeds: [embed], components: [selection] }).then((message) => {
             let count = 0;
@@ -114,9 +128,8 @@ module.exports = {
             try {
                 selectMenuCollector.on("collect", async (menu) => {
                     if (menu.user.id !== interaction.member.id) {
-                        const unused = new EmbedBuilder().setColor(client.color).setDescription(`\`❌\` | This menu is not for you!`);
-
-                        return menu.reply({ embeds: [unused], ephemeral: true });
+                        const notYours = new EmbedBuilder().setColor(client.color).setDescription(`\`❌\` | This menu is not for you!`);
+                        return menu.reply({ embeds: [notYours], ephemeral: true });
                     }
 
                     menu.deferUpdate();
@@ -147,9 +160,8 @@ module.exports = {
                     const tplay = new EmbedBuilder()
                         .setColor(client.color)
                         .setDescription(
-                            `\`➕\` | **[${trackTitle ? trackTitle : "Unknown"}](${track.info.uri})** • \`${
-                                track.info.isStream ? "LIVE" : formatDuration(track.info.length)
-                            }\` • ${interaction.member}`,
+                            `\`➕\` | **[${trackTitle ? trackTitle : "Unknown"}](${track.info.uri})** • \`${track.info.isStream ? "LIVE" : formatDuration(track.info.length)
+                            }\` • ${interaction.user}`,
                         );
 
                     await message.edit({ embeds: [tplay], components: [] });
@@ -158,8 +170,7 @@ module.exports = {
 
                 selectMenuCollector.on("end", async (collected) => {
                     if (!collected.size) {
-                        const timed = new EmbedBuilder().setColor(client.color).setDescription(`\`❌\` | Search was time out.`);
-
+                        const timed = new EmbedBuilder().setColor(client.color).setDescription(`\`❌\` | Search timed out.`);
                         return message.edit({ embeds: [timed], components: [] });
                     }
                 });

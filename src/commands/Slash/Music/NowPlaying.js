@@ -1,64 +1,66 @@
 const { EmbedBuilder } = require("discord.js");
 const formatDuration = require("../../../structures/FormatDuration.js");
-const GControl = require("../../../settings/models/Control.js");
-const capital = require("node-capitalize");
 
 module.exports = {
     name: "nowplaying",
-    description: "Show the current playing song.",
+    description: "Show what is currently playing.",
     category: "Music",
+    options: [],
     permissions: {
         bot: [],
         channel: [],
         user: [],
     },
     settings: {
-        inVc: true,
-        sameVc: true,
+        inVc: false,
+        sameVc: false,
         player: true,
         current: true,
         owner: false,
     },
     run: async (client, interaction, player) => {
-        await interaction.deferReply({ ephemeral: false });
-
-        const Control = await GControl.findOne({ guild: interaction.guild.id });
-
-        // When button control "enable", this will make command unable to use. You can delete this
-        if (Control.playerControl === "enable") {
-            const ctrl = new EmbedBuilder()
-                .setColor(client.color)
-                .setDescription(`\`❌\` | You can't use this command as the player control was enable!`);
-            return interaction.editReply({ embeds: [ctrl] });
-        }
+        await interaction.deferReply({ ephemeral: true });
 
         if (!player.currentTrack) return;
 
         try {
             const Titles =
-                player.currentTrack.info.title.length > 20
-                    ? player.currentTrack.info.title.substr(0, 20) + "..."
+                player.currentTrack.info.title.length > 200
+                    ? player.currentTrack.info.title.substr(0, 200) + "..."
                     : player.currentTrack.info.title;
             const Author =
-                player.currentTrack.info.author.length > 20
-                    ? player.currentTrack.info.author.substr(0, 20) + "..."
+                player.currentTrack.info.author.length > 60
+                    ? player.currentTrack.info.author.substr(0, 60) + "..."
                     : player.currentTrack.info.author;
             const currentPosition = formatDuration(player.position);
             const trackDuration = formatDuration(player.currentTrack.info.length);
             const playerDuration = player.currentTrack.info.isStream ? "LIVE" : trackDuration;
             const currentAuthor = player.currentTrack.info.author ? Author : "Unknown";
             const currentTitle = player.currentTrack.info.title ? Titles : "Unknown";
-            const Part = Math.floor((player.position / playerDuration) * 30);
+            const Part = Math.floor((player.position / player.currentTrack.info.length) * 30);
             const Emoji = player.isPlaying ? "🕒 |" : "⏸ |";
 
-            let sources = null;
-
-            if (player.currentTrack.info.sourceName === "youtube") sources = "YouTube";
-            else if (player.currentTrack.info.sourceName === "soundcloud") sources = "SoundCloud";
-            else if (player.currentTrack.info.sourceName === "spotify") sources = "Spotify";
-            else if (player.currentTrack.info.sourceName === "apllemusic") sources = "Apple Music";
-            else if (player.currentTrack.info.sourceName === "bandcamp") sources = "Bandcamp";
-            else if (player.currentTrack.info.sourceName === "http") sources = "HTTP";
+            let sources = "Unknown";
+            switch (player.currentTrack.info.sourceName) {
+                case "youtube":
+                    sources = "YouTube";
+                    break;
+                case "soundcloud":
+                    sources = "SoundCloud";
+                    break;
+                case "spotify":
+                    sources = "Spotify";
+                    break;
+                case "applemusic":
+                    sources = "Apple Music";
+                    break;
+                case "bandcamp":
+                    sources = "Bandcamp";
+                    break;
+                case "http":
+                    sources = "HTTP";
+                    break;
+            }
 
             const embed = new EmbedBuilder()
                 .setAuthor({
@@ -87,7 +89,7 @@ module.exports = {
             return interaction.editReply({ embeds: [embed] });
         } catch (error) {
             console.log(error);
-            return interaction.reply({ content: `\`❌\` | There isn't current playing song or song has been ended!`, ephemeral: true });
+            return interaction.editReply({ content: `\`❌\` | Nothing is playing!` });
         }
     },
 };
