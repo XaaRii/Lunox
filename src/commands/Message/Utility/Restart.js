@@ -7,7 +7,7 @@ module.exports = {
     aliases: ["reboot"],
     owner: true,
     run: async (client, message) => {
-        const embed = new EmbedBuilder().setDescription(`\`🤖\` | Bot is: \`Restarting\``).setColor(client.color);
+        const embed = new EmbedBuilder().setDescription(`\`🤖\` | Restarting...`).setColor(client.color);
 
         await message.reply({ embeds: [embed] });
 

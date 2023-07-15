@@ -29,6 +29,7 @@ module.exports = {
         user: ["ManageGuild"],
     },
     settings: {
+        optionType: 1,
         inVc: false,
         sameVc: false,
         player: false,

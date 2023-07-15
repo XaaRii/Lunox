@@ -20,6 +20,7 @@ module.exports = {
         user: [],
     },
     settings: {
+        optionType: 2,
         inVc: true,
         sameVc: true,
         player: true,

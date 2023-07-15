@@ -5,13 +5,13 @@ module.exports = {
     name: "nowplaying",
     description: "Show what is currently playing.",
     category: "Music",
-    options: [],
     permissions: {
         bot: [],
         channel: [],
         user: [],
     },
     settings: {
+        optionType: 1,
         inVc: false,
         sameVc: false,
         player: true,

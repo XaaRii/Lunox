@@ -4,13 +4,13 @@ module.exports = {
     name: "join",
     description: "Let me join your voice channel.",
     category: "Music",
-    options: [],
     permissions: {
         bot: ["Speak", "Connect"],
         channel: ["Speak", "Connect"],
         user: [],
     },
     settings: {
+        optionType: 2,
         inVc: true,
         sameVc: false,
         player: false,

@@ -11,6 +11,7 @@ module.exports = {
         user: ["Administrator"],
     },
     settings: {
+        optionType: 0,
         inVc: true,
         sameVc: true,
         player: true,

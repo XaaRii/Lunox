@@ -4,13 +4,13 @@ module.exports = {
     name: "pause",
     description: "Pause current song.",
     category: "Music",
-    options: [],
     permissions: {
         bot: [],
         channel: [],
         user: [],
     },
     settings: {
+        optionType: 1,
         inVc: true,
         sameVc: true,
         player: true,

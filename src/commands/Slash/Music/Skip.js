@@ -5,13 +5,13 @@ module.exports = {
     name: "skip",
     description: "Skip current song.",
     category: "Music",
-    options: [],
     permissions: {
         bot: [],
         channel: [],
         user: [],
     },
     settings: {
+        optionType: 1,
         inVc: true,
         sameVc: true,
         player: true,

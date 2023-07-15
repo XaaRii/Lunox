@@ -43,6 +43,7 @@ module.exports = {
         user: [],
     },
     settings: {
+        optionType: 1,
         inVc: true,
         sameVc: false,
         player: false,
@@ -73,7 +74,6 @@ module.exports = {
             return interaction.editReply({ embeds: [embed] });
         }
 
-        await interaction.deferReply({ ephemeral: false });
 
         if (!player) {
             player = await client.poru.createConnection({

@@ -8,7 +8,7 @@ module.exports = {
         {
             name: "position",
             description: "Provide queue position.",
-            type: ApplicationCommandOptionType.Integer,
+            type: ApplicationCommandOptionType.Number,
             required: true,
             min_value: 1,
         },
@@ -19,6 +19,7 @@ module.exports = {
         user: [],
     },
     settings: {
+        optionType: 2,
         inVc: true,
         sameVc: true,
         player: true,
@@ -28,7 +29,7 @@ module.exports = {
     run: async (client, interaction, player) => {
         await interaction.deferReply();
 
-        const value = interaction.options.getInteger("position");
+        const value = interaction.options.getNumber("position");
 
         if (value > player.queue.length) {
             const embed = new EmbedBuilder().setDescription(`\`❌\` | Queue position was not found`).setColor(client.color);

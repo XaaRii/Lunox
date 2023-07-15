@@ -5,6 +5,7 @@ module.exports = {
         stop: "◻️",
         skip: "⏭️",
         previous: "⏮️",
+        autoplay: "⤴",
         replay: "🔄",
         voldown: "🔉",
         volup: "🔊",

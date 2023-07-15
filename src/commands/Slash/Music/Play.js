@@ -43,6 +43,7 @@ module.exports = {
         user: [],
     },
     settings: {
+        optionType: 1,
         inVc: true,
         sameVc: false,
         player: false,
@@ -72,8 +73,6 @@ module.exports = {
             const embed = new EmbedBuilder().setColor(client.color).setDescription(`\`❌\` | Song was not found or it failed to load!`);
             return interaction.editReply({ embeds: [embed] });
         }
-
-        await interaction.deferReply({ ephemeral: false });
 
         if (!player) {
             player = await client.poru.createConnection({

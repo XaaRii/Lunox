@@ -4,13 +4,13 @@ module.exports = {
     name: "autoplay",
     description: "Autoplay random related song/s.",
     category: "Music",
-    options: [],
     permissions: {
         bot: [],
         channel: [],
         user: [],
     },
     settings: {
+        optionType: 2,
         inVc: true,
         sameVc: true,
         player: true,
@@ -33,7 +33,7 @@ module.exports = {
         if (player.autoplay === true) {
             player.autoplay = false;
 
-            await player.queue.clear();
+            if (player.queue.length < 2) await player.queue.clear();
 
             const embed = new EmbedBuilder().setDescription(`\`🔴\` | Autoplay has been: \`Disabled\``).setColor(client.color);
 

@@ -32,22 +32,22 @@ module.exports.run = async (client, player, track) => {
             { name: `Duration:`, value: `${trackDuration}`, inline: true },
         ])
         .setColor(client.color)
-        .setFooter({ text: `Loop Mode: ${capital(player.loop)} • Queue Left: ${player.queue.length} • Volume: ${player.volume}%` });
+        .setFooter({ text: `Loop Mode: ${capital(player.loop)} • Queue Left: ${player.queue.length} • Autoplay: ${player.autoplay === true ? "true" : "false"} • Volume: ${player.volume}%` });
 
     const emoji = client.emoji.button;
 
-    const bReplay = new ButtonBuilder().setCustomId("replay").setEmoji(emoji.replay).setStyle(ButtonStyle.Secondary);
+    const bLoop = new ButtonBuilder().setCustomId("loop").setEmoji(emoji.loop.none).setStyle(ButtonStyle.Secondary);
     const bPrev = new ButtonBuilder().setCustomId("prev").setEmoji(emoji.previous).setStyle(ButtonStyle.Secondary);
     const bPause = new ButtonBuilder().setCustomId("pause").setEmoji(emoji.pause).setStyle(ButtonStyle.Secondary);
     const bSkip = new ButtonBuilder().setCustomId("skip").setEmoji(emoji.skip).setStyle(ButtonStyle.Secondary);
-    const bLoop = new ButtonBuilder().setCustomId("loop").setEmoji(emoji.loop.none).setStyle(ButtonStyle.Secondary);
+    const bAutoplay = new ButtonBuilder().setCustomId("autoplay").setEmoji(emoji.autoplay).setStyle(ButtonStyle.Secondary);
     const bShuffle = new ButtonBuilder().setCustomId("shuffle").setEmoji(emoji.shuffle).setStyle(ButtonStyle.Secondary);
     const bVDown = new ButtonBuilder().setCustomId("voldown").setEmoji(emoji.voldown).setStyle(ButtonStyle.Secondary);
     const bStop = new ButtonBuilder().setCustomId("stop").setEmoji(emoji.stop).setStyle(ButtonStyle.Danger);
     const bVUp = new ButtonBuilder().setCustomId("volup").setEmoji(emoji.volup).setStyle(ButtonStyle.Secondary);
     const bInfo = new ButtonBuilder().setCustomId("info").setEmoji(emoji.info).setStyle(ButtonStyle.Secondary);
 
-    const button = new ActionRowBuilder().addComponents(bReplay, bPrev, bPause, bSkip, bLoop);
+    const button = new ActionRowBuilder().addComponents(bLoop, bPrev, bPause, bSkip, bAutoplay);
     const button2 = new ActionRowBuilder().addComponents(bShuffle, bVDown, bStop, bVUp, bInfo);
 
     // When set to "disable", button control won't show.
@@ -97,11 +97,41 @@ module.exports.run = async (client, player, track) => {
                         break;
                 }
                 Started.setFooter({
-                    text: `Loop Mode: ${capital(player.loop)} • Queue Left: ${player.queue.length} • Volume: ${player.volume}%`,
+                    text: `Loop Mode: ${capital(player.loop)} • Queue Left: ${player.queue.length} • Autoplay: ${player.autoplay === true ? "true" : "false"} • Volume: ${player.volume}%`,
                 });
                 await nplaying.edit({ embeds: [Started], components: [button, button2] });
                 break;
-
+            case "autoplay":
+                const e = new EmbedBuilder().setColor(client.color);
+                const currentsong = player.currentTrack.info;
+                const ytUri = /^(https?:\/\/)?(www\.)?(m\.)?(music\.)?(youtube\.com|youtu\.?be)\/.+$/gi.test(currentsong.uri);
+                if (!ytUri) {
+                    e.setDescription(`\`❌\` | Autoplay feature only supports YouTube!`);
+                    return message.reply({ embeds: [e], ephemeral: true });
+                }
+                if (player.autoplay === true) {
+                    player.autoplay = false;
+                    if (player.queue.length < 2) await player.queue.clear();
+                    e.setDescription(`\`🔴\` | Autoplay has been \`disabled\``);
+                    message.reply({ embeds: [e], ephemeral: true });
+                } else {
+                    player.autoplay = true;
+                    if (ytUri) {
+                        const identifier = currentsong.identifier;
+                        const search = `https://music.youtube.com/watch?v=${identifier}&list=RD${identifier}`;
+                        const res = await client.poru.resolve({ query: search, source: "ytmsearch", requester: message.user });
+        
+                        await player.queue.add(res.tracks[Math.floor(Math.random() * res.tracks.length) ?? 1]);
+        
+                        e.setDescription(`\`🔵\` | Autoplay has been \`enabled\`, 1 song added.`);
+                        message.reply({ embeds: [e], ephemeral: true });
+                    }
+                }
+                Started.setFooter({
+                    text: `Loop Mode: ${capital(player.loop)} • Queue Left: ${player.queue.length} • Autoplay: ${player.autoplay === true ? "true" : "false"} • Volume: ${player.volume}%`,
+                });
+                await nplaying.edit({ embeds: [Started], components: [button, button2] });
+                break;
             case "replay":
                 if (!player.currentTrack.info.isSeekable) {
                     const embed = new EmbedBuilder().setColor(client.color).setDescription(`\`❌\` | Song can't be replayed`);
@@ -172,7 +202,7 @@ module.exports.run = async (client, player, track) => {
                     message.deferUpdate();
                     await player.setVolume(player.volume - 10);
                     Started.setFooter({
-                        text: `Queue Left: ${player.queue.length} • Loop Mode: ${capital(player.loop)} • Volume: ${player.volume}%`,
+                        text: `Loop Mode: ${capital(player.loop)} • Queue Left: ${player.queue.length} • Autoplay: ${player.autoplay === true ? "true" : "false"} • Volume: ${player.volume}%`,
                     });
                     await nplaying.edit({ embeds: [Started], components: [button, button2] });
                 }
@@ -186,7 +216,7 @@ module.exports.run = async (client, player, track) => {
                     message.deferUpdate();
                     await player.setVolume(player.volume + 10);
                     Started.setFooter({
-                        text: `Queue Left: ${player.queue.length} • Loop Mode: ${capital(player.loop)} • Volume: ${player.volume}%`,
+                        text: `Loop Mode: ${capital(player.loop)} • Queue Left: ${player.queue.length} • Autoplay: ${player.autoplay === true ? "true" : "false"} • Volume: ${player.volume}%`,
                     });
                     await nplaying.edit({ embeds: [Started], components: [button, button2] });
                 }

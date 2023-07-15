@@ -3,11 +3,9 @@ const {
     ActionRowBuilder,
     StringSelectMenuBuilder,
     StringSelectMenuOptionBuilder,
-    ButtonBuilder,
-    ButtonStyle,
 } = require("discord.js");
 const { readdirSync } = require("fs");
-const { supportUrl, inviteUrl, voteUrl, imageUrl } = require("../../../settings/config.js");
+const { imageUrl } = require("../../../settings/config.js");
 
 module.exports = {
     name: "help",
@@ -16,10 +14,6 @@ module.exports = {
     aliases: ["h", "halp"],
     owner: false,
     run: async (client, message, args) => {
-        const row2 = new ActionRowBuilder()
-            .addComponents(new ButtonBuilder().setLabel("Support").setURL(supportUrl).setStyle(ButtonStyle.Link))
-            .addComponents(new ButtonBuilder().setLabel("Vote").setURL(voteUrl).setStyle(ButtonStyle.Link))
-            .addComponents(new ButtonBuilder().setLabel("Invite").setURL(inviteUrl).setStyle(ButtonStyle.Link));
 
         if (!args[0]) {
             const categories = readdirSync("./src/commands/Slash/");
@@ -53,7 +47,7 @@ module.exports = {
                     ),
             ]);
 
-            message.reply({ embeds: [embed], components: [row, row2] }).then(async (msg) => {
+            message.reply({ embeds: [embed], components: [row] }).then(async (msg) => {
                 let filter = (i) => i.isStringSelectMenu() && i.user && i.message.author.id == client.user.id;
                 let collector = await msg.createMessageComponentCollector({
                     filter,
@@ -111,7 +105,7 @@ module.exports = {
                             })
                             .setTimestamp();
 
-                        msg.edit({ embeds: [timed], components: [row2] });
+                        msg.edit({ embeds: [timed] });
                     }
                 });
             });

@@ -4,13 +4,13 @@ module.exports = {
     name: "clearqueue",
     description: "Clear the current queue.",
     category: "Music",
-    options: [],
     permissions: {
         bot: [],
         channel: [],
         user: [],
     },
     settings: {
+        optionType: 2,
         inVc: false,
         sameVc: true,
         player: true,

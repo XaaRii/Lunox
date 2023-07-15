@@ -4,13 +4,13 @@ module.exports = {
     name: "replay",
     description: "Replay the current song.",
     category: "Music",
-    options: [],
     permissions: {
         bot: [],
         channel: [],
         user: [],
     },
     settings: {
+        optionType: 2,
         inVc: true,
         sameVc: true,
         player: true,
