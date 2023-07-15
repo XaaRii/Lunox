@@ -1,0 +1,55 @@
+const { readdirSync } = require("node:fs");
+
+module.exports = {
+	name: 'reloadevent',
+	description: 'Reloads an event',
+    category: "Utility",
+	aliases: ['rle'],
+    owner: true,
+    run: (client, message, args) => {
+        if (!args.length) return message.reply("I don't know what event you wanna reload!");
+		const commandName = args[0].toLowerCase();
+		
+        if (client.events.has(eventName)) {
+            // Assign event function to variable
+            const eventFunction = client.events.get(eventName);
+            // Remove the event listener
+            client.removeListener(eventName, eventFunction);
+            try {
+            // Delete event from require cache
+            delete require.cache[require.resolve(`../../events/botEvents/${dir}/${eventName}.js`)];
+            // Re-require event
+                const updatedEvent = require(`../../events/botEvents/${dir}/${eventName}.js`);
+                client.slashCommands.set(newCommand.name, newCommand);
+            // Store updated event in Map
+            client.events.set(updatedEvent.name, updatedEvent.run);
+            // Re-register updated event
+            client.on(updatedEvent.name, updatedEvent.run.bind(null, client));
+            } catch (error) {
+                console.log(error);
+                message.channel.send(`I've got an error while reloading that command:\n\`${error.message}\``);
+            }
+        }
+
+        readdirSync("./src/events/").forEach((par) => {
+            readdirSync(`./src/events/${par}/`).forEach((dir) => {
+            const files = readdirSync(`./src/events/${par}/${dir}`).filter((file) => file.endsWith(".js"));
+            for (const file of files) {
+                if (file.toLowerCase() === commandName + ".js") {
+                    delete require.cache[require.resolve(`../../events/${par}/${dir}/${eventName}.js`)];
+
+                    try {
+                        const event = require(`../../events/${par}/${dir}/${file}`);
+                        const eventName = event.event || file.replace(".js", "");
+                        client.on(eventName, event.run.bind(null, client));
+                    } catch (err) {
+                        console.log(`Error while loading event: \n${err}`);
+                        console.log(err);
+                    }
+                }
+            }
+        });
+        });
+
+    },
+};
